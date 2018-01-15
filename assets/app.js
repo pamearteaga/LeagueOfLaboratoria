@@ -49,7 +49,7 @@ function facebookLogin() {
         var token = result.credential.accessToken;
         // The signed-in user info.
         var user = result.user;
-        console.log("Facebook user > " + user);
+        console.log("Facebook user > " + JSON.stringify(user));
         // ...
     }).catch(function(error) {
         // Handle Errors here.
