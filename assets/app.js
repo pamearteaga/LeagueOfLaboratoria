@@ -1,7 +1,7 @@
 var globalData = {};
 var callbackCounter = 0;
 
-$(document).ready(function() {
+$(document).ready(async function() {
     try {
         //Acá se ejecuta el código peligroso
         //Terrores más comunes son : undefined, null, formatos esperados que el usuario no cumple
@@ -41,21 +41,83 @@ $(document).ready(function() {
             console.log("Doge error, oh noes > " + error);
         }
     );
+    /* VERSION ULTRA MODERNA ES8
+    try {
+        let responses = await downloadDogeAndCatte();
+        let blobs = await Promise.all(responses.map((response) => { return response.blob() }));
+        blobs.forEach((animale) => {
+            var animaleURL = URL.createObjectURL(animale);
+            $("#champions").append('<img src="' + animaleURL + '"/>');
+        });
+    } catch (error) {
+
+    }*/
+    //Version ES6
+    downloadDogeAndCatte().then((responses) => {
+        //A través de .map, transformamos el arreglo responses, en uno que contiene solo sus .blob()
+        //SIN .map habría quedado : [responses[0].blob(), responses[1].blob()]
+        return Promise.all(responses.map((response) => { return response.blob() }));
+    }).then((animaleBlobs) => {
+        animaleBlobs.forEach((animale) => {
+            var animaleURL = URL.createObjectURL(animale);
+            $("#champions").append('<img src="' + animaleURL + '"/>');
+        });
+    }).catch((error) => {
+
+    });
 });
 
 //Función lenta, que no puede retornar inmediatamente, por lo tanto pide callbacks
 function downloadPhoto(callback, errorCallback) {
-    fetch("http://i0.kym-cdn.com/photos/images/newsfeed/000/674/934/422.jpg")
-        .then((response) => {
-            response.blob().then((doge) => {
-                //Acá es como si retornaramos la respuesta
-                callback(doge);
-            });
-        }).catch((error) => {
+    let dogePromise = fetch("http://i0.kym-cdn.com/photos/images/newsfeed/000/674/934/422.jpg");
+    let doge = null;
+    dogePromise.then(
+        //Callback de dogePromise
+        (response) => {
+            let blobPromise = response.blob();
+            return blobPromise;
+        }
+    ).then(
+        //Este callback pertenece a la promesa blobPromise
+        (dogeRes) => {
+            //Acá es como si retornaramos la respuesta
+            callback(dogeRes);
+            doge = dogeRes;
+            return Promise.resolve(42);
+        }
+    ).then((el42) => {
+        console.log("cuarenta y dos es > " + el42 + " y el doge es > " + doge);
+    }).catch(
+        //Este callback de error se llamará para CUALQUIERA de las promesas
+        (error) => {
             console.error("Doge error wow > " + error);
             //Así es como avisamos de que falló lo que se quería hacer
             errorCallback(error);
-        });
+        }
+    );
+}
+
+/*Retornará una promesa*/
+function downloadDogeAndCatte() {
+    return new Promise((resolve, reject) => {
+        let dogePromise = fetch("http://i0.kym-cdn.com/photos/images/newsfeed/000/674/934/422.jpg");
+        let cattePromise = fetch("https://pbs.twimg.com/profile_images/378800000691127784/b7d06c12e25a747b205954a58210a4c6.jpeg");
+
+        Promise.all([dogePromise, cattePromise])
+            .then(
+                //Solo se ejecutará este callback en caso de que ambas retornen bien
+                (responses) => {
+                    console.log("Responses > " + JSON.stringify(responses));
+                    console.log("Doge y catte llegaron bien");
+                    resolve(responses);
+                }
+            ).catch(
+                //Cualquiera que falle veremos el error acá
+                (error) => {
+                    reject(error);
+                }
+            )
+    });
 }
 
 function loadChampionData(id) {
