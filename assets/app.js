@@ -2,18 +2,28 @@ var globalData = {};
 var callbackCounter = 0;
 
 $(document).ready(function() {
-    $.ajax({
-        url: "https://la2.api.riotgames.com/lol/platform/v3/champions?freeToPlay=false&api_key=RGAPI-c0c5021a-5f0e-4708-b1e9-6d28fbd23c3c",
-        dataType: "json",
-        success: function(data) {
-            console.log("Datos de campeones > " + JSON.stringify(data));
-            globalData.champions = data;
-            for (var i = 0; i < data.champions.length; ++i) {
-                loadChampionData(data.champions[i].id)
+    try {
+        //Acá se ejecuta el código peligroso
+        //Terrores más comunes son : undefined, null, formatos esperados que el usuario no cumple
+        $.ajax({
+            url: "https://la2.api.riotgames.com/lol/platform/v3/champions?freeToPlay=false&api_key=RGAPI-c0c5021a-5f0e-4708-b1e9-6d28fbd23c3c",
+            dataType: "json",
+            success: function(data) {
+                console.log("Datos de campeones > " + JSON.stringify(data));
+                globalData.champions = data;
+                for (var i = 0; i < data.champions.length; ++i) {
+                    loadChampionData(data.champions[i].id)
+                }
             }
-        }
-    });
-    console.log("Holi Holi");
+        });
+        console.log("Holi Holi");
+        throw new Error("No te quiero saludar...");
+    } catch (error) {
+        //Acá se ejecuta el código en caso de falla
+        console.error("Holi Holi Failure > " + error + " | stack > " + error.stack);
+    } finally {
+        //Acá se ejecuta el código que viene después del código peligroso
+    }
 });
 
 function loadChampionData(id) {
