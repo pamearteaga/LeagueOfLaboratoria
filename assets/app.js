@@ -14,6 +14,9 @@ $(document).ready(function() {
                 for (var i = 0; i < data.champions.length; ++i) {
                     loadChampionData(data.champions[i].id)
                 }
+            },
+            fail: function() {
+
             }
         });
         console.log("Holi Holi");
@@ -24,7 +27,36 @@ $(document).ready(function() {
     } finally {
         //Acá se ejecuta el código que viene después del código peligroso
     }
+    //Uso de función "lenta"
+    downloadPhoto(
+        //Callback de éxito 
+        (doge /*respuesta de la función*/ ) => {
+            //Convertir BLOB (objeto binario muy grande) en URL falsa
+            var dogeURL = URL.createObjectURL(doge);
+            //Append de nueva imagen del doge
+            $("#champions").append('<img src="' + dogeURL + '"/>');
+        },
+        //Callback de error en caso de que las cosas fallen
+        (error) => {
+            console.log("Doge error, oh noes > " + error);
+        }
+    );
 });
+
+//Función lenta, que no puede retornar inmediatamente, por lo tanto pide callbacks
+function downloadPhoto(callback, errorCallback) {
+    fetch("http://i0.kym-cdn.com/photos/images/newsfeed/000/674/934/422.jpg")
+        .then((response) => {
+            response.blob().then((doge) => {
+                //Acá es como si retornaramos la respuesta
+                callback(doge);
+            });
+        }).catch((error) => {
+            console.error("Doge error wow > " + error);
+            //Así es como avisamos de que falló lo que se quería hacer
+            errorCallback(error);
+        });
+}
 
 function loadChampionData(id) {
     $.ajax({
